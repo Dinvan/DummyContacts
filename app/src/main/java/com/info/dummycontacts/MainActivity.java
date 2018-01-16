@@ -16,6 +16,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.text.SpannableStringBuilder;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -32,6 +33,7 @@ import com.onegravity.contactpicker.core.ContactPickerActivity;
 import com.onegravity.contactpicker.group.Group;
 import com.onegravity.contactpicker.picture.ContactPictureType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends BaseActivity {
@@ -44,7 +46,7 @@ public class MainActivity extends BaseActivity {
      * may be best to switch to a
      * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
-    private SectionsPagerAdapter mSectionsPagerAdapter;
+    private ViewPagerAdapter adapter;
     private static final String EXTRA_DARK_THEME = "EXTRA_DARK_THEME";
     private static final String EXTRA_GROUPS = "EXTRA_GROUPS";
     private static final String EXTRA_CONTACTS = "EXTRA_CONTACTS";
@@ -58,6 +60,8 @@ public class MainActivity extends BaseActivity {
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
+    ContactListFragment contactListFragment;
+    SettingsFragment settingsFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,11 +72,15 @@ public class MainActivity extends BaseActivity {
         setSupportActionBar(toolbar);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        adapter = new ViewPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
+        contactListFragment = ContactListFragment.newInstance("", "");
+        settingsFragment = SettingsFragment.newInstance("", "");
+        adapter.addFragment(contactListFragment, "Contacts");
+        adapter.addFragment(settingsFragment, "Settings");
+        mViewPager.setAdapter(adapter);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
@@ -171,39 +179,32 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+    class ViewPagerAdapter extends FragmentPagerAdapter {
+        private final List<Fragment> mFragmentList = new ArrayList<>();
+        private final List<String> mFragmentTitleList = new ArrayList<>();
 
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
+        public ViewPagerAdapter(FragmentManager manager) {
+            super(manager);
         }
 
         @Override
         public Fragment getItem(int position) {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
+            return mFragmentList.get(position);
         }
 
         @Override
         public int getCount() {
-            // Show 2 total pages.
-            return 2;
+            return mFragmentList.size();
+        }
+
+        public void addFragment(Fragment fragment, String title) {
+            mFragmentList.add(fragment);
+            mFragmentTitleList.add(title);
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0:
-                    return "Top 5";
-                case 1:
-                    return "Settings";
-
-            }
-            return null;
+            return mFragmentTitleList.get(position);
         }
     }
 
@@ -223,8 +224,6 @@ public class MainActivity extends BaseActivity {
 
     private void populateContactList(List<Group> groups, List<Contact> contacts) {
         // we got a result from the contact picker --> show the picked contacts
-        TextView contactsView = (TextView) findViewById(R.id.contacts);
-        SpannableStringBuilder result = new SpannableStringBuilder();
 
         try {
           /*  if (groups != null && ! groups.isEmpty()) {
@@ -236,30 +235,33 @@ public class MainActivity extends BaseActivity {
                     }
                 }
             }*/
-            if (contacts != null && ! contacts.isEmpty()) {
-                result.append("CONTACTS\n");
+            if (contacts != null && !contacts.isEmpty()) {
+                ContactLog.deleteAll(ContactLog.class);
                 for (Contact contact : contacts) {
-                    populateContact(result, contact, "");
+                    ContactLog contactLog = new ContactLog();
+                    contactLog.setDisplayName(contact.getDisplayName());
+                    contactLog.setPhotoUri(contact.getPhotoUri()+"");
+                    contactLog.setContactNumber(contact.getPhone(1 | 2 | 3 | 4));
+                    contactLog.setNameChar(String.valueOf(contact.getContactLetter()));
+                    contactLog.save();
                 }
+                contactListFragment.refreshContactList();
             }
-        }
-        catch (Exception e) {
-            result.append(e.getMessage());
-        }
+        } catch (Exception e) {
 
-        contactsView.setText(result);
+        }
     }
 
     private void populateContact(SpannableStringBuilder result, Contact element, String prefix) {
         //int start = result.length();
         String displayName = element.getDisplayName();
-        Uri photoUri=element.getPhotoUri();
-        char contactLatter=element.getContactLetter();
-        long id=element.getId();
+        Uri photoUri = element.getPhotoUri();
+        char contactLatter = element.getContactLetter();
+        long id = element.getId();
 
-        String mobileNumber=element.getPhone(1|2|3|4);
+        String mobileNumber = element.getPhone(1 | 2 | 3 | 4);
         result.append(prefix);
-        result.append(displayName +","+mobileNumber + "\n");
+        result.append(displayName + "," + mobileNumber + "\n");
         //result.setSpan(new BulletSpan(15), start, result.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
     }
 

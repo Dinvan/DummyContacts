@@ -3,6 +3,7 @@ package com.info.dummycontacts;
 /**
  * Created by advanz101 on 16/1/18.
  */
+
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -16,7 +17,10 @@ import android.support.v7.app.AppCompatActivity;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 public class BaseActivity extends AppCompatActivity {
+
+    /*This application let you access your phone contacts to choose your inner circle (5 Most important people in your life). You can set some frequency and type of communication in general for every body and in a specific way for each inner member. The user will receive a notification to engage with one of the inner circle’s member at the right moment.*/
 
     private static final String PARAM_REQUEST_IN_PROCESS = "requestPermissionsInProcess";
 
