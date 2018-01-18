@@ -1,16 +1,24 @@
 package com.info.dummycontacts;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.Uri;
+import android.os.Build;
+import android.provider.Telephony;
 import android.support.v7.widget.RecyclerView;
+import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
@@ -47,12 +55,17 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
     public void onBindViewHolder(ViewHolder holder, int position) {
         final ContactLog contact = contactsList.get(position);
         holder.txtName.setText(contact.getDisplayName());
-        holder.txtCommunicationType.setText(contact.getCommunicationType());
-        try {
-            long timeMiles = contact.getLastContactOn();
+       if(StringHelper.isEmpty(contact.getCommunicationType())){
+           holder.txtCommunicationType.setText(contact.getContactNumber());
+       }else {
+           holder.txtCommunicationType.setText(contact.getCommunicationType());
+       }
+
+        long timeMiles = contact.getLastContactOn();
+        if (timeMiles > 0) {
             String newTime = DateTimeHelper.getElapsedTime(timeMiles);
             holder.txtLastContact.setText(newTime);
-        } catch (Exception e) {
+        } else {
             holder.txtLastContact.setText("");
         }
         if (!TextUtils.isEmpty(contact.photoUri)) {
@@ -73,7 +86,7 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showContactsType(context,contact);
+                showContactsType(context, contact);
             }
         });
     }
@@ -99,8 +112,8 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
     }
 
 
-    public void showContactsType(final Context context,final ContactLog contactLog) {
-        final CharSequence[] OPTION_ITEMS = {"Phone","SMS","Whats App","Facebook","Telegram","Cancel"};
+    public void showContactsType(final Context context, final ContactLog contactLog) {
+        final CharSequence[] OPTION_ITEMS = {"Call", "SMS", "Whats App", "Facebook", "Telegram", "Cancel"};
         final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(context);
         builder.setTitle("Contact Using..");
         builder.setItems(OPTION_ITEMS, new DialogInterface.OnClickListener() {
@@ -111,16 +124,19 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
                         contactLog.setCommunicationType(OPTION_ITEMS[item].toString());
                         contactLog.setLastContactOn(System.currentTimeMillis());
                         contactLog.save();
+                        makePhoneCall(contactLog.getContactNumber());
                         break;
                     case 1:
                         contactLog.setCommunicationType(OPTION_ITEMS[item].toString());
                         contactLog.setLastContactOn(System.currentTimeMillis());
                         contactLog.save();
+                        sendSMS(contactLog.getContactNumber());
                         break;
                     case 2:
                         contactLog.setCommunicationType(OPTION_ITEMS[item].toString());
                         contactLog.setLastContactOn(System.currentTimeMillis());
                         contactLog.save();
+                        openWhatsApp(contactLog.getContactNumber());
                         break;
                     case 3:
                         contactLog.setCommunicationType(OPTION_ITEMS[item].toString());
@@ -131,6 +147,7 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
                         contactLog.setCommunicationType(OPTION_ITEMS[item].toString());
                         contactLog.setLastContactOn(System.currentTimeMillis());
                         contactLog.save();
+                        openTelegram(contactLog.getPhotoUri());
                         break;
                     case 5:
                         dialog.dismiss();
@@ -144,4 +161,64 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
         builder.show();
     }
 
+
+
+    public void openWhatsApp(String contactNumber){
+        try {
+
+            String toNumber = PhoneNumberUtils.stripSeparators(contactNumber); // Replace with mobile phone number without +Sign or leading zeros.
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse("http://api.whatsapp.com/send?phone="+toNumber));
+            context.startActivity(intent);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+
+    private void makePhoneCall(String phoneNumber) {
+        Intent intent = new Intent(Intent.ACTION_DIAL);
+        intent.setData(Uri.parse("tel:" + phoneNumber));
+        context.startActivity(intent);
+    }
+
+
+    private void sendSMS(String phoneNumber) {
+
+        context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.fromParts("sms", phoneNumber, null)));
+
+    }
+
+    public void  openTelegram(String phoneNumber)
+    {
+        final String appName = "org.telegram.messenger";
+        final boolean isAppInstalled = isAppAvailable(context, appName);
+        if (isAppInstalled)
+        {
+            Intent myIntent = new Intent(Intent.ACTION_SEND);
+            myIntent.setType("text/plain");
+            myIntent.setPackage(appName);
+            context.startActivity(Intent.createChooser(myIntent, "Share with"));
+        }
+        else
+        {
+            Toast.makeText(context, "Telegram not Installed", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    public static boolean isAppAvailable(Context context, String appName)
+    {
+        PackageManager pm = context.getPackageManager();
+        try
+        {
+            pm.getPackageInfo(appName, PackageManager.GET_ACTIVITIES);
+            return true;
+        }
+        catch (PackageManager.NameNotFoundException e)
+        {
+            return false;
+        }
+    }
 }
