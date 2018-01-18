@@ -196,10 +196,9 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
         final boolean isAppInstalled = isAppAvailable(context, appName);
         if (isAppInstalled)
         {
-            Intent myIntent = new Intent(Intent.ACTION_SEND);
-            myIntent.setType("text/plain");
-            myIntent.setPackage(appName);
-            context.startActivity(Intent.createChooser(myIntent, "Share with"));
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse("tg:msg?to=+" + phoneNumber));
+            context.startActivity(intent);
         }
         else
         {
