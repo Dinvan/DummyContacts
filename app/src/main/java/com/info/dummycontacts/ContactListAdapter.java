@@ -1,10 +1,13 @@
 package com.info.dummycontacts;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
@@ -19,10 +22,15 @@ import java.util.List;
 public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.ViewHolder> {
     List<ContactLog> contactsList;
     Context context;
+    // declare the color generator and drawable builder
+    private ColorGenerator mColorGenerator = ColorGenerator.MATERIAL;
+    private TextDrawable.IBuilder mDrawableBuilder;
 
     public ContactListAdapter(List<ContactLog> contactsList, Context context) {
         this.contactsList = contactsList;
         this.context = context;
+        mDrawableBuilder = TextDrawable.builder()
+                .round();
     }
 
     @Override
@@ -36,12 +44,22 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         ContactLog contact = contactsList.get(position);
-        holder.tvLabel.setText(contact.getDisplayName());
-        Picasso.with(holder.itemView.getContext())
-                .load(contact.photoUri)
-                .placeholder(R.mipmap.ic_launcher)
-                .error(R.mipmap.ic_launcher)
-                .into(holder.roundedIvProfile);
+        holder.txtName.setText(contact.getDisplayName());
+        if (!TextUtils.isEmpty(contact.photoUri)) {
+            holder.roundedIvProfile.setVisibility(View.VISIBLE);
+            holder.rounded_iv_profile1.setVisibility(View.GONE);
+            Picasso.with(holder.itemView.getContext())
+                    .load(contact.photoUri)
+                    .placeholder(R.mipmap.ic_launcher)
+                    .error(R.mipmap.ic_launcher)
+                    .into(holder.roundedIvProfile);
+        } else {
+            holder.roundedIvProfile.setVisibility(View.GONE);
+            holder.rounded_iv_profile1.setVisibility(View.VISIBLE);
+            TextDrawable drawable = mDrawableBuilder.build(String.valueOf(contact.getDisplayName().charAt(0)).toUpperCase(), mColorGenerator.getColor(contact.getDisplayName()));
+            holder.rounded_iv_profile1.setImageDrawable(drawable);
+        }
+
     }
 
     @Override
@@ -51,12 +69,16 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
 
     class ViewHolder extends RecyclerView.ViewHolder {
         private RoundedImageView roundedIvProfile;
-        private TextView tvLabel;
+        private ImageView rounded_iv_profile1;
+        private TextView txtName, txtCommunicationType, txtLastContact;
 
         public ViewHolder(View itemView) {
             super(itemView);
             roundedIvProfile = (RoundedImageView) itemView.findViewById(R.id.rounded_iv_profile);
-            tvLabel = (TextView) itemView.findViewById(R.id.tv_label);
+            rounded_iv_profile1 = (ImageView) itemView.findViewById(R.id.rounded_iv_profile1);
+            txtName = (TextView) itemView.findViewById(R.id.txtName);
+            txtCommunicationType = (TextView) itemView.findViewById(R.id.txtCommunicationType);
+            txtLastContact = (TextView) itemView.findViewById(R.id.txtLastContact);
         }
     }
 }

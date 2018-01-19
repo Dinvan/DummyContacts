@@ -3,20 +3,48 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="5dp"
-    >
+    android:padding="8dp">
 
     <com.info.dummycontacts.RoundedImageView
         android:id="@+id/rounded_iv_profile"
-        android:layout_width="40dp"
-        android:layout_height="40dp" />
+        android:layout_width="50dp"
+        android:visibility="gone"
+        android:layout_height="50dp" />
+    <ImageView
+        android:id="@+id/rounded_iv_profile1"
+        android:layout_width="50dp"
+        android:layout_height="50dp" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/txtName"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:gravity="center_vertical"
+            android:text="test"
+            android:textSize="18dp" />
+
+        <TextView
+            android:id="@+id/txtCommunicationType"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:text="SMS"
+            android:textSize="15dp" />
+
+    </LinearLayout>
 
     <TextView
-        android:id="@+id/tv_label"
+        android:id="@+id/txtLastContact"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
-        android:gravity="center_vertical"
-        />
+        android:text="3 DAYS AGO"
+        android:textSize="14dp" />
 
 </LinearLayout>

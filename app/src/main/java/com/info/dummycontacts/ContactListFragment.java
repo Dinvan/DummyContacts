@@ -4,6 +4,7 @@ package com.info.dummycontacts;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -78,7 +79,11 @@ public class ContactListFragment extends Fragment {
         List<ContactLog> contactLogList = ContactLog.listAll(ContactLog.class);
         ContactListAdapter contactListAdapter=new ContactListAdapter(contactLogList,getActivity());
         contactsList.setLayoutManager(new LinearLayoutManager(getActivity()));
+        RecyclerView.ItemDecoration dividerItemDecoration = new DividerItemDecoration(ContextCompat.getDrawable(getActivity(),R.drawable.divider));
+        contactsList.addItemDecoration(dividerItemDecoration);
         contactsList.setAdapter(contactListAdapter);
+
+
 
     }
 
