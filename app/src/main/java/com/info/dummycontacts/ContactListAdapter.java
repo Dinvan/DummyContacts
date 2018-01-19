@@ -47,6 +47,14 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
     public void onBindViewHolder(ViewHolder holder, int position) {
         final ContactLog contact = contactsList.get(position);
         holder.txtName.setText(contact.getDisplayName());
+        holder.txtCommunicationType.setText(contact.getCommunicationType());
+        try {
+            long timeMiles = contact.getLastContactOn();
+            String newTime = DateTimeHelper.getElapsedTime(timeMiles);
+            holder.txtLastContact.setText(newTime);
+        } catch (Exception e) {
+            holder.txtLastContact.setText("");
+        }
         if (!TextUtils.isEmpty(contact.photoUri)) {
             holder.roundedIvProfile.setVisibility(View.VISIBLE);
             holder.rounded_iv_profile1.setVisibility(View.GONE);
@@ -128,6 +136,7 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
                         dialog.dismiss();
                         break;
                 }
+                notifyDataSetChanged();
             }
         });
 
