@@ -1,6 +1,8 @@
 package com.info.dummycontacts;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -43,7 +45,7 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        ContactLog contact = contactsList.get(position);
+        final ContactLog contact = contactsList.get(position);
         holder.txtName.setText(contact.getDisplayName());
         if (!TextUtils.isEmpty(contact.photoUri)) {
             holder.roundedIvProfile.setVisibility(View.VISIBLE);
@@ -60,6 +62,12 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
             holder.rounded_iv_profile1.setImageDrawable(drawable);
         }
 
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showContactsType(context,contact);
+            }
+        });
     }
 
     @Override
@@ -81,4 +89,50 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
             txtLastContact = (TextView) itemView.findViewById(R.id.txtLastContact);
         }
     }
+
+
+    public void showContactsType(final Context context,final ContactLog contactLog) {
+        final CharSequence[] OPTION_ITEMS = {"Phone","SMS","Whats App","Facebook","Telegram","Cancel"};
+        final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(context);
+        builder.setTitle("Contact Using..");
+        builder.setItems(OPTION_ITEMS, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int item) {
+                switch (item) {
+                    case 0:
+                        contactLog.setCommunicationType(OPTION_ITEMS[item].toString());
+                        contactLog.setLastContactOn(System.currentTimeMillis());
+                        contactLog.save();
+                        break;
+                    case 1:
+                        contactLog.setCommunicationType(OPTION_ITEMS[item].toString());
+                        contactLog.setLastContactOn(System.currentTimeMillis());
+                        contactLog.save();
+                        break;
+                    case 2:
+                        contactLog.setCommunicationType(OPTION_ITEMS[item].toString());
+                        contactLog.setLastContactOn(System.currentTimeMillis());
+                        contactLog.save();
+                        break;
+                    case 3:
+                        contactLog.setCommunicationType(OPTION_ITEMS[item].toString());
+                        contactLog.setLastContactOn(System.currentTimeMillis());
+                        contactLog.save();
+                        break;
+                    case 4:
+                        contactLog.setCommunicationType(OPTION_ITEMS[item].toString());
+                        contactLog.setLastContactOn(System.currentTimeMillis());
+                        contactLog.save();
+                        break;
+                    case 5:
+                        dialog.dismiss();
+                        break;
+                }
+            }
+        });
+
+        builder.setCancelable(false);
+        builder.show();
+    }
+
 }
