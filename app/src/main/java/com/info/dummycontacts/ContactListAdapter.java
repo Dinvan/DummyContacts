@@ -147,7 +147,7 @@ public class ContactListAdapter extends RecyclerView.Adapter<ContactListAdapter.
                         contactLog.setCommunicationType(OPTION_ITEMS[item].toString());
                         contactLog.setLastContactOn(System.currentTimeMillis());
                         contactLog.save();
-                        openTelegram(contactLog.getPhotoUri());
+                        openTelegram(contactLog.getContactNumber());
                         break;
                     case 5:
                         dialog.dismiss();

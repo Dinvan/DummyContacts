@@ -1,8 +1,14 @@
 package com.info.dummycontacts;
 
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,6 +66,36 @@ public class SettingsFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_settings, container, false);
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        setAlarm();
+    }
+
+    public static final int REQUEST_CODE = 0;
+    public void setAlarm(){
+        long oneDay=86400000;
+        long oneWeek=604800000;
+        long oneMonth=2592000000l;
+        double oneYear=31536000000.4289;
+
+        Intent intent = new Intent(getActivity(), MainActivity.class);
+        intent.setAction(Intent.ACTION_MAIN);
+        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(getActivity(), REQUEST_CODE,
+                intent, 0);
+        int alarmType = AlarmManager.ELAPSED_REALTIME;
+        final int FIFTEEN_SEC_MILLIS = 15000;
+        AlarmManager alarmManager = (AlarmManager)
+                getActivity().getSystemService(getActivity().ALARM_SERVICE);
+
+        alarmManager.setRepeating(alarmType, SystemClock.elapsedRealtime() + FIFTEEN_SEC_MILLIS,
+                FIFTEEN_SEC_MILLIS, pendingIntent);
+        // END_INCLUDE (configure_alarm_manager);
+        Log.i("RepeatingAlarmFragment", "Alarm set.");
+
     }
 
 }
