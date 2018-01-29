@@ -51,9 +51,6 @@ public class NotificationScheduler {
         Intent intent1 = new Intent(context, cls);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, DAILY_REMINDER_REQUEST_CODE, intent1, PendingIntent.FLAG_UPDATE_CURRENT);
         AlarmManager am = (AlarmManager) context.getSystemService(ALARM_SERVICE);
-        if(interval==0){
-            interval=AlarmManager.INTERVAL_DAY;
-        }
         am.setInexactRepeating(AlarmManager.RTC_WAKEUP, setcalendar.getTimeInMillis(),interval, pendingIntent);
 
     }

@@ -15,10 +15,12 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="sett_reminder_freq_label">Set Frequency Interval</string>
 
     <string name="sett_reminder_header">Set Reminder</string>
     <string name="sett_reminder_label">Remind Me</string>
-    <string name="sett_reminder_desc">We will remind you to make entiries of your expense</string>
+    <string name="sett_reminder_desc">We will remind you to make contact to your friends</string>
     <string name="sett_reminder_time_label">Set Reminder Time</string>
     <string name="sett_reminder_time_content">8 : 00 PM</string>
+    <string name="sett_reminder_interval">After One Day</string>
 </resources>

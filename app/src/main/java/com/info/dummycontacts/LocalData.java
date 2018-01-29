@@ -1,5 +1,6 @@
 package com.info.dummycontacts;
 
+import android.app.AlarmManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -71,7 +72,7 @@ public class LocalData {
     }
 
     public long getInterval(){
-        return appSharedPrefs.getLong(interval, 0);
+        return appSharedPrefs.getLong(interval, AlarmManager.INTERVAL_DAY);
     }
 
 

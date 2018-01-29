@@ -6,6 +6,8 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -45,9 +47,9 @@ public class SettingsFragment extends Fragment {
     LocalData localData;
 
     SwitchCompat reminderSwitch;
-    TextView tvTime;
+    TextView tvTime, tv_reminder_freq_desc;
 
-    LinearLayout ll_set_time, ll_terms;
+    LinearLayout ll_set_time, ll_set_freq, ll_terms;
 
     int hour, min;
 
@@ -94,19 +96,21 @@ public class SettingsFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-       init();
+        init();
     }
 
-    public void init(){
+    public void init() {
 
         localData = new LocalData(getActivity());
 
         myClipboard = (ClipboardManager) getActivity().getSystemService(getActivity().CLIPBOARD_SERVICE);
 
         ll_set_time = (LinearLayout) getView().findViewById(R.id.ll_set_time);
+        ll_set_freq = (LinearLayout) getView().findViewById(R.id.ll_set_freq);
         ll_terms = (LinearLayout) getView().findViewById(R.id.ll_terms);
 
         tvTime = (TextView) getView().findViewById(R.id.tv_reminder_time_desc);
+        tv_reminder_freq_desc = (TextView) getView().findViewById(R.id.tv_reminder_freq_desc);
 
         reminderSwitch = (SwitchCompat) getView().findViewById(R.id.timerSwitch);
 
@@ -114,10 +118,12 @@ public class SettingsFragment extends Fragment {
         min = localData.get_min();
 
         tvTime.setText(getFormatedTime(hour, min));
+        tv_reminder_freq_desc.setText(getFormattedInterval(localData.getInterval()));
         reminderSwitch.setChecked(localData.getReminderStatus());
 
         if (!localData.getReminderStatus())
             ll_set_time.setAlpha(0.4f);
+        ll_set_freq.setAlpha(0.4f);
 
         reminderSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -125,12 +131,14 @@ public class SettingsFragment extends Fragment {
                 localData.setReminderStatus(isChecked);
                 if (isChecked) {
                     Log.d(TAG, "onCheckedChanged: true");
-                    NotificationScheduler.setReminder(getActivity(), AlarmReceiver.class, localData.get_hour(), localData.get_min(),localData.getInterval());
+                    NotificationScheduler.setReminder(getActivity(), AlarmReceiver.class, localData.get_hour(), localData.get_min(), localData.getInterval());
                     ll_set_time.setAlpha(1f);
+                    ll_set_freq.setAlpha(1f);
                 } else {
                     Log.d(TAG, "onCheckedChanged: false");
                     NotificationScheduler.cancelReminder(getActivity(), AlarmReceiver.class);
                     ll_set_time.setAlpha(0.4f);
+                    ll_set_freq.setAlpha(0.4f);
                 }
 
             }
@@ -144,14 +152,55 @@ public class SettingsFragment extends Fragment {
             }
         });
 
-        ll_terms.setOnClickListener(new View.OnClickListener() {
+        ll_set_freq.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                if (localData.getReminderStatus())showContactFreqDialog();
             }
         });
 
 
+    }
+
+    final CharSequence[] OPTION_ITEMS = {"Every Minute", "Every Day", "Every 2 Day", "Weekly", "Monthly","Cancel"};
+    public void showContactFreqDialog() {
+
+        final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getActivity());
+        builder.setTitle("Frequency");
+
+        builder.setItems(OPTION_ITEMS, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int item) {
+                switch (item) {
+                    case 0:
+                        localData.setInterval(1 * 60 * 1000);
+                        tv_reminder_freq_desc.setText(getFormattedInterval(localData.getInterval()));
+                        break;
+                    case 1:
+                        localData.setInterval(AlarmManager.INTERVAL_DAY);
+                        tv_reminder_freq_desc.setText(getFormattedInterval(localData.getInterval()));
+                        break;
+                    case 2:
+                        localData.setInterval(AlarmManager.INTERVAL_DAY * 2);
+                        tv_reminder_freq_desc.setText(getFormattedInterval(localData.getInterval()));
+                        break;
+                    case 3:
+                        localData.setInterval(AlarmManager.INTERVAL_DAY * 7);
+                        tv_reminder_freq_desc.setText(getFormattedInterval(localData.getInterval()));
+                        break;
+                    case 4:
+                        localData.setInterval(AlarmManager.INTERVAL_DAY * 30);
+                        tv_reminder_freq_desc.setText(getFormattedInterval(localData.getInterval()));
+                        break;
+                    case 5:
+                        dialog.dismiss();
+                        break;
+                }
+            }
+        });
+
+        builder.setCancelable(false);
+        builder.show();
     }
 
 
@@ -169,7 +218,8 @@ public class SettingsFragment extends Fragment {
                         localData.set_hour(hour);
                         localData.set_min(min);
                         tvTime.setText(getFormatedTime(hour, min));
-                        NotificationScheduler.setReminder(getActivity(), AlarmReceiver.class, localData.get_hour(), localData.get_min(),localData.getInterval());
+                        tv_reminder_freq_desc.setText(getFormattedInterval(localData.getInterval()));
+                        NotificationScheduler.setReminder(getActivity(), AlarmReceiver.class, localData.get_hour(), localData.get_min(), localData.getInterval());
                     }
                 }, h, m, false);
 
@@ -196,6 +246,23 @@ public class SettingsFragment extends Fragment {
 
         return newDateString;
     }
+
+    public String getFormattedInterval(long interval){
+
+            if(interval==1 * 60 * 1000){
+                return OPTION_ITEMS[0].toString();
+            }else    if(interval==AlarmManager.INTERVAL_DAY) {
+                return OPTION_ITEMS[1].toString();
+            }else    if(interval==AlarmManager.INTERVAL_DAY*2) {
+                return OPTION_ITEMS[2].toString();
+            }else    if(interval==AlarmManager.INTERVAL_DAY*7) {
+                return OPTION_ITEMS[3].toString();
+            }else    if(interval==AlarmManager.INTERVAL_DAY*30) {
+                return OPTION_ITEMS[4].toString();
+            }
+        return "";
+    }
+
 
     @TargetApi(Build.VERSION_CODES.N)
     public Locale getCurrentLocale() {
