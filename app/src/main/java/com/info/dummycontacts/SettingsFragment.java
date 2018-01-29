@@ -1,17 +1,30 @@
 package com.info.dummycontacts;
 
 
+import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.app.TimePickerDialog;
+import android.content.ClipboardManager;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.SwitchCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.TimePicker;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 
 /**
@@ -28,7 +41,17 @@ public class SettingsFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    String TAG = "RemindMe";
+    LocalData localData;
 
+    SwitchCompat reminderSwitch;
+    TextView tvTime;
+
+    LinearLayout ll_set_time, ll_terms;
+
+    int hour, min;
+
+    ClipboardManager myClipboard;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -71,31 +94,116 @@ public class SettingsFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        setAlarm();
+       init();
     }
 
-    public static final int REQUEST_CODE = 0;
-    public void setAlarm(){
-        long oneDay=86400000;
-        long oneWeek=604800000;
-        long oneMonth=2592000000l;
-        double oneYear=31536000000.4289;
+    public void init(){
 
-        Intent intent = new Intent(getActivity(), MainActivity.class);
-        intent.setAction(Intent.ACTION_MAIN);
-        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        PendingIntent pendingIntent = PendingIntent.getActivity(getActivity(), REQUEST_CODE,
-                intent, 0);
-        int alarmType = AlarmManager.ELAPSED_REALTIME;
-        final int FIFTEEN_SEC_MILLIS = 15000;
-        AlarmManager alarmManager = (AlarmManager)
-                getActivity().getSystemService(getActivity().ALARM_SERVICE);
+        localData = new LocalData(getActivity());
 
-        alarmManager.setRepeating(alarmType, SystemClock.elapsedRealtime() + FIFTEEN_SEC_MILLIS,
-                FIFTEEN_SEC_MILLIS, pendingIntent);
-        // END_INCLUDE (configure_alarm_manager);
-        Log.i("RepeatingAlarmFragment", "Alarm set.");
+        myClipboard = (ClipboardManager) getActivity().getSystemService(getActivity().CLIPBOARD_SERVICE);
+
+        ll_set_time = (LinearLayout) getView().findViewById(R.id.ll_set_time);
+        ll_terms = (LinearLayout) getView().findViewById(R.id.ll_terms);
+
+        tvTime = (TextView) getView().findViewById(R.id.tv_reminder_time_desc);
+
+        reminderSwitch = (SwitchCompat) getView().findViewById(R.id.timerSwitch);
+
+        hour = localData.get_hour();
+        min = localData.get_min();
+
+        tvTime.setText(getFormatedTime(hour, min));
+        reminderSwitch.setChecked(localData.getReminderStatus());
+
+        if (!localData.getReminderStatus())
+            ll_set_time.setAlpha(0.4f);
+
+        reminderSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                localData.setReminderStatus(isChecked);
+                if (isChecked) {
+                    Log.d(TAG, "onCheckedChanged: true");
+                    NotificationScheduler.setReminder(getActivity(), AlarmReceiver.class, localData.get_hour(), localData.get_min(),localData.getInterval());
+                    ll_set_time.setAlpha(1f);
+                } else {
+                    Log.d(TAG, "onCheckedChanged: false");
+                    NotificationScheduler.cancelReminder(getActivity(), AlarmReceiver.class);
+                    ll_set_time.setAlpha(0.4f);
+                }
+
+            }
+        });
+
+        ll_set_time.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (localData.getReminderStatus())
+                    showTimePickerDialog(localData.get_hour(), localData.get_min());
+            }
+        });
+
+        ll_terms.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
 
     }
 
+
+    private void showTimePickerDialog(int h, int m) {
+
+        LayoutInflater inflater = getLayoutInflater(getArguments());
+        View view = inflater.inflate(R.layout.timepicker_header, null);
+
+        TimePickerDialog builder = new TimePickerDialog(getActivity(), R.style.DialogTheme,
+                new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker timePicker, int hour, int min) {
+                        Log.d(TAG, "onTimeSet: hour " + hour);
+                        Log.d(TAG, "onTimeSet: min " + min);
+                        localData.set_hour(hour);
+                        localData.set_min(min);
+                        tvTime.setText(getFormatedTime(hour, min));
+                        NotificationScheduler.setReminder(getActivity(), AlarmReceiver.class, localData.get_hour(), localData.get_min(),localData.getInterval());
+                    }
+                }, h, m, false);
+
+        builder.setCustomTitle(view);
+        builder.show();
+
+    }
+
+    public String getFormatedTime(int h, int m) {
+        final String OLD_FORMAT = "HH:mm";
+        final String NEW_FORMAT = "hh:mm a";
+
+        String oldDateString = h + ":" + m;
+        String newDateString = "";
+
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat(OLD_FORMAT, getCurrentLocale());
+            Date d = sdf.parse(oldDateString);
+            sdf.applyPattern(NEW_FORMAT);
+            newDateString = sdf.format(d);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return newDateString;
+    }
+
+    @TargetApi(Build.VERSION_CODES.N)
+    public Locale getCurrentLocale() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return getResources().getConfiguration().getLocales().get(0);
+        } else {
+            //noinspection deprecation
+            return getResources().getConfiguration().locale;
+        }
+    }
 }

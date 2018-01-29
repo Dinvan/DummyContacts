@@ -17,6 +17,7 @@ public class LocalData {
     private static final String reminderStatus="reminderStatus";
     private static final String hour="hour";
     private static final String min="min";
+    private static final String interval="interval";
 
     public LocalData(Context context)
     {
@@ -62,6 +63,17 @@ public class LocalData {
         prefsEditor.putInt(min, m);
         prefsEditor.commit();
     }
+
+    public void setInterval(long i)
+    {
+        prefsEditor.putLong(interval, i);
+        prefsEditor.commit();
+    }
+
+    public long getInterval(){
+        return appSharedPrefs.getLong(interval, 0);
+    }
+
 
     public void reset()
     {
