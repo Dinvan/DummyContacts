@@ -9,6 +9,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -49,7 +50,7 @@ public class SettingsFragment extends Fragment {
     SwitchCompat reminderSwitch;
     TextView tvTime, tv_reminder_freq_desc;
 
-    LinearLayout ll_set_time, ll_set_freq, ll_terms;
+    LinearLayout ll_set_time, ll_set_freq, ll_rate, ll_share;
 
     int hour, min;
 
@@ -107,7 +108,8 @@ public class SettingsFragment extends Fragment {
 
         ll_set_time = (LinearLayout) getView().findViewById(R.id.ll_set_time);
         ll_set_freq = (LinearLayout) getView().findViewById(R.id.ll_set_freq);
-        ll_terms = (LinearLayout) getView().findViewById(R.id.ll_terms);
+        ll_rate = (LinearLayout) getView().findViewById(R.id.ll_rate);
+        ll_share = (LinearLayout) getView().findViewById(R.id.ll_share);
 
         tvTime = (TextView) getView().findViewById(R.id.tv_reminder_time_desc);
         tv_reminder_freq_desc = (TextView) getView().findViewById(R.id.tv_reminder_freq_desc);
@@ -155,14 +157,29 @@ public class SettingsFragment extends Fragment {
         ll_set_freq.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (localData.getReminderStatus())showContactFreqDialog();
+                if (localData.getReminderStatus()) showContactFreqDialog();
+            }
+        });
+        ll_rate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Uri uri = Uri.parse(getString(R.string.app_play_url));
+                Intent about = new Intent(Intent.ACTION_VIEW, uri);
+                startActivity(about);
             }
         });
 
+        ll_share.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                shareApplication();
+            }
+        });
 
     }
 
-    final CharSequence[] OPTION_ITEMS = {"Every Minute", "Every Day", "Every 2 Day", "Weekly", "Monthly","Cancel"};
+    final CharSequence[] OPTION_ITEMS = {"Every Minute", "Every Day", "Every 2 Day", "Weekly", "Monthly", "Cancel"};
+
     public void showContactFreqDialog() {
 
         final android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(getActivity());
@@ -206,7 +223,7 @@ public class SettingsFragment extends Fragment {
 
     private void showTimePickerDialog(int h, int m) {
 
-        LayoutInflater inflater = getLayoutInflater(getArguments());
+        LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.timepicker_header, null);
 
         TimePickerDialog builder = new TimePickerDialog(getActivity(), R.style.DialogTheme,
@@ -247,19 +264,19 @@ public class SettingsFragment extends Fragment {
         return newDateString;
     }
 
-    public String getFormattedInterval(long interval){
+    public String getFormattedInterval(long interval) {
 
-            if(interval==1 * 60 * 1000){
-                return OPTION_ITEMS[0].toString();
-            }else    if(interval==AlarmManager.INTERVAL_DAY) {
-                return OPTION_ITEMS[1].toString();
-            }else    if(interval==AlarmManager.INTERVAL_DAY*2) {
-                return OPTION_ITEMS[2].toString();
-            }else    if(interval==AlarmManager.INTERVAL_DAY*7) {
-                return OPTION_ITEMS[3].toString();
-            }else    if(interval==AlarmManager.INTERVAL_DAY*30) {
-                return OPTION_ITEMS[4].toString();
-            }
+        if (interval == 1 * 60 * 1000) {
+            return OPTION_ITEMS[0].toString();
+        } else if (interval == AlarmManager.INTERVAL_DAY) {
+            return OPTION_ITEMS[1].toString();
+        } else if (interval == AlarmManager.INTERVAL_DAY * 2) {
+            return OPTION_ITEMS[2].toString();
+        } else if (interval == AlarmManager.INTERVAL_DAY * 7) {
+            return OPTION_ITEMS[3].toString();
+        } else if (interval == AlarmManager.INTERVAL_DAY * 30) {
+            return OPTION_ITEMS[4].toString();
+        }
         return "";
     }
 
@@ -269,8 +286,19 @@ public class SettingsFragment extends Fragment {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             return getResources().getConfiguration().getLocales().get(0);
         } else {
-            //noinspection deprecation
             return getResources().getConfiguration().locale;
+        }
+    }
+
+    private void shareApplication() {
+        Intent share = new Intent(Intent.ACTION_SEND);
+        share.setType("text/plain");
+        share.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.app_name));
+        share.putExtra(Intent.EXTRA_TEXT, getString(R.string.SHARE_APP_MAIL));
+        try {
+            startActivity(Intent.createChooser(share, getString(R.string.app_name)));
+        } catch (Exception e) {
+
         }
     }
 }

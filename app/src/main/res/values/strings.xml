@@ -23,4 +23,14 @@
     <string name="sett_reminder_time_label">Set Reminder Time</string>
     <string name="sett_reminder_time_content">8 : 00 PM</string>
     <string name="sett_reminder_interval">After One Day</string>
+    <string name="share_app">Share App</string>
+    <string name="rate_app">Rate App</string>
+
+
+    <string name="SHARE_APP_MAIL">
+     Get the app today! Freely available and easy to download, DummyContact is a must have for every person who loves to be touch with friends.
+     \n\n  https://play.google.com/store/apps/details?id=com.info.dummycontacts
+
+    </string>
+    <string name="app_play_url">https://play.google.com/store/apps/details?id=com.info.dummycontacts</string>
 </resources>

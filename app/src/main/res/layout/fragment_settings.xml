@@ -134,33 +134,33 @@
             android:id="@+id/tv_agree_header"
             style="@style/settings_header"
             android:paddingBottom="@dimen/items_inbetween_space"
-            android:text="Agreement" />
+            android:text="Others" />
 
         <LinearLayout
-            android:id="@+id/ll_terms"
+            android:id="@+id/ll_share"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="@dimen/items_inbetween_space"
             android:paddingTop="@dimen/items_inbetween_space">
 
             <TextView
-                android:id="@+id/tv_agree_terms_label"
+                android:id="@+id/tv_share_app_label"
                 style="@style/settings_sub_header"
-                android:text="Terms &amp; conditions" />
+                android:text="@string/share_app" />
 
         </LinearLayout>
 
         <LinearLayout
-            android:id="@+id/ll_privacy"
+            android:id="@+id/ll_rate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="@dimen/items_inbetween_space"
             android:paddingTop="@dimen/items_inbetween_space">
 
             <TextView
-                android:id="@+id/tv_agree_privacy_label"
+                android:id="@+id/tv_rate_app_label"
                 style="@style/settings_sub_header"
-                android:text="Privacy policy" />
+                android:text="@string/rate_app" />
 
         </LinearLayout>
 

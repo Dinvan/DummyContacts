@@ -38,7 +38,7 @@ public class BaseActivity extends AppCompatActivity {
             mRequestPermissionsInProcess.set(tmp);
         }
 
-        checkPermissions(new String[]{Manifest.permission.READ_CONTACTS});
+        checkPermissions(new String[]{Manifest.permission.READ_CONTACTS,Manifest.permission.READ_CALL_LOG});
     }
 
     @Override
